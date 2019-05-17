@@ -12,8 +12,16 @@ class ViewController: UIViewController {
 
     var listOfWords = ["sushi", "coffee", "beef", "running", "swimming", "glass", "broom", "hat", "shoes"]
     let incorrectMovesAllowed = 7
-    var totalWins = 0
-    var totalLosses = 0
+    var totalWins = 0 {
+        didSet {
+            newRound()
+        }
+    }
+    var totalLosses = 0 {
+        didSet {
+            newRound()
+        }
+    }
     var currentGame: Game!
     
     @IBOutlet weak var treeImageView: UIImageView!
@@ -31,13 +39,30 @@ class ViewController: UIViewController {
         sender.isEnabled = false
         let letter = Character(sender.title(for: .normal)!.lowercased())
         currentGame.playerGuessed(letter: letter)
+        updateGameState()
+    }
+    
+    func updateGameState() {
+        if currentGame.incorrectMovesRemaining == 0 {
+            totalLosses += 1
+        } else if currentGame.formattedWord == currentGame.word {
+            totalWins += 1
+        }
         updateUI()
     }
     
     func newRound() {
-        let newWord = listOfWords.removeFirst()
-        currentGame = Game(word: newWord, incorrectMovesRemaining: incorrectMovesAllowed, guessedLetters: [])
-        updateUI()
+        var enableLetterButtons = true
+        if !listOfWords.isEmpty {
+            let newWord = listOfWords.removeFirst()
+            currentGame = Game(word: newWord, incorrectMovesRemaining: incorrectMovesAllowed, guessedLetters: [])
+            updateUI()
+        } else {
+            enableLetterButtons = false
+        }
+        for button in letterButtons {
+            button.isEnabled = enableLetterButtons
+        }
     }
     
     func updateUI() {
